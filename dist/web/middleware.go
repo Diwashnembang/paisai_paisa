@@ -9,5 +9,4 @@ func (app *application) allowedCors() gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	return cors.New(corsConfig)
-
 }
