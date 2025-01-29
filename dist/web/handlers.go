@@ -12,6 +12,7 @@ func (app *application) home(c *gin.Context) {
 }
 
 func (app *application) signUpPost(c *gin.Context) {
+	//TODO : make third party sign in and up
 	err := c.Request.ParseForm()
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to parse form:%v ", err)
@@ -24,14 +25,14 @@ func (app *application) signUpPost(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "error signing up")
 		return
 	}
-	// c.Redirect(http.StatusSeeOther, "/")
 	signature, err := app.generateJwtToken(email)
 	if err != nil {
 		slog.Error("error generating token")
 		return
 
 	}
-	c.String(http.StatusAccepted, signature)
-	slog.Info("still running")
-
+	c.JSON(http.StatusAccepted, gin.H{
+		"token": signature,
+	})
+	// c.Redirect(http.StatusSeeOther, "/")
 }

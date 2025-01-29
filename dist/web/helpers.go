@@ -15,7 +15,7 @@ func (app *application) generateJwtToken(email string) (string, error) {
 	key := os.Getenv("JWT_TOKEN")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user": email,
-		"exp":  time.Now().Add(24 * time.Hour),
+		"exp":  time.Now().Add(24 * time.Hour).Unix(),
 	})
 	signature, err := token.SignedString([]byte(key))
 	if err != nil {
