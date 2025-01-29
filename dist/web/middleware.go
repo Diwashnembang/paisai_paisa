@@ -44,6 +44,7 @@ func (app *application) isAuthorized(c *gin.Context) {
 	}
 
 	token.Valid = true
+	c.Keys["authroized"] = token.Valid
 	c.Next()
 
 }
