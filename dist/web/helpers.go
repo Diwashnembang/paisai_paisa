@@ -7,8 +7,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
+
+type jsonResponse struct {
+	Success bool           `json:"success"`
+	Payload map[string]any `json:"payload"`
+}
 
 func (app *application) generateJwtToken(email string) (string, error) {
 
@@ -25,4 +31,24 @@ func (app *application) generateJwtToken(email string) (string, error) {
 	}
 	return signature, nil
 
+}
+
+// templete to send error response in json
+func (app *application) errorJson(errMsg string) *jsonResponse {
+	return &jsonResponse{
+		Success: false,
+		Payload: gin.H{
+			"error": errMsg,
+		},
+	}
+}
+
+// templete to send sucess response in json
+func (app *application) successJson(token string) *jsonResponse {
+	return &jsonResponse{
+		Success: true,
+		Payload: gin.H{
+			"token": token,
+		},
+	}
 }

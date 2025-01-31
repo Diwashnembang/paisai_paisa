@@ -28,7 +28,6 @@ func (app *application) isAuthorized(c *gin.Context) {
 		return
 	}
 	rawToken := strings.TrimSpace(strings.TrimPrefix(authHear, "Bearer"))
-	slog.Info(rawToken)
 	token, err := jwt.Parse(rawToken, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 		if !ok {

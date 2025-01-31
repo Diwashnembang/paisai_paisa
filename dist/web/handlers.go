@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -27,7 +28,7 @@ func (app *application) signUpPost(c *gin.Context) {
 	//TODO : make third party sign in and up
 	err := c.Request.ParseForm()
 	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to parse form:%v ", err)
+		c.JSON(http.StatusBadRequest, app.errorJson(fmt.Sprintf("Failed to parse form : %s", err)))
 		return
 	}
 	email := c.Request.FormValue("email")
@@ -36,11 +37,11 @@ func (app *application) signUpPost(c *gin.Context) {
 
 		_, err = app.DB.CreateUser(email, password)
 		if err != nil {
-			c.String(http.StatusInternalServerError, "error signing up")
+			c.JSON(http.StatusBadRequest, app.errorJson("error signinu up"))
 			return
 		}
 	} else {
-		c.String(http.StatusBadRequest, "email or passowrd cannot be empty")
+		c.JSON(http.StatusBadRequest, "email or password cannot be empty")
 		return
 	}
 
@@ -50,36 +51,33 @@ func (app *application) signUpPost(c *gin.Context) {
 		return
 
 	}
-	c.JSON(http.StatusAccepted, gin.H{
-		"token": signature,
-	})
+
+	c.JSON(http.StatusAccepted, app.successJson(signature))
 }
 
 func (app *application) loginPost(c *gin.Context) {
-
+	//TODO : fix email and password validator
 	err := c.Request.ParseForm()
 	if err != nil {
-		c.String(http.StatusBadRequest, "could not parse form:%s", err)
+		c.JSON(http.StatusBadRequest, app.errorJson("error parsing form"))
 		return
 	}
 	email := c.Request.FormValue("email")
 	password := c.Request.FormValue("password")
 	if email == "" && password == "" {
-		c.String(http.StatusBadRequest, "email or passowrd cannot be empty")
+		c.JSON(http.StatusBadRequest, app.errorJson("email or password cannot be empty"))
 		return
 	}
 	_, err = app.DB.VerifyUser(email, password)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "error log in  ")
+		c.JSON(http.StatusBadRequest, app.errorJson("invalid criendientials"))
 		slog.Info(err.Error())
 		return
 	}
 	signature, err := app.generateJwtToken(email)
 	if err != nil {
-		slog.Error("error generating token")
+		c.JSON(http.StatusBadRequest, app.errorJson("error generating token"))
 	}
-	c.JSON(http.StatusAccepted, gin.H{
-		"token": signature,
-	})
+	c.JSON(http.StatusAccepted, app.successJson(signature))
 
 }
