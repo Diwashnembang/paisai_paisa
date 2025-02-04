@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,12 +17,12 @@ type jsonResponse struct {
 	Payload map[string]any `json:"payload"`
 }
 
-func (app *application) generateJwtToken(email string) (string, error) {
+func (app *application) generateJwtToken(id int) (string, error) {
 
 	key := os.Getenv("JWT_TOKEN")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": email,
-		"exp":  time.Now().Add(24 * time.Hour).Unix(),
+		"sub": strconv.Itoa(id),
+		"exp": time.Now().Add(24 * time.Hour).Unix(),
 	})
 	signature, err := token.SignedString([]byte(key))
 	if err != nil {

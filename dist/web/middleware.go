@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -19,7 +20,6 @@ func (app *application) allowedCors() gin.HandlerFunc {
 }
 
 func (app *application) isAuthorized(c *gin.Context) {
-	//TODO : get claims form the token
 	authHear := c.GetHeader("Authorization")
 
 	if !strings.HasPrefix(authHear, "Bearer") {
@@ -41,9 +41,24 @@ func (app *application) isAuthorized(c *gin.Context) {
 		slog.Info("unauthorized access attemp", err)
 		return
 	}
+	var u string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		u, err = claims.GetSubject()
+		if err != nil {
+			slog.Error("couldnot get sub", err.Error())
+			return
+		}
 
-	token.Valid = true
-	c.Keys["authroized"] = token.Valid
+	} else {
+		slog.Error("unknown claims type, cannot proceed")
+		return
+	}
+	userID, err := strconv.ParseUint(u, 10, 32)
+	if err != nil {
+		slog.Error("error converiting userid into int", err.Error())
+		c.JSON(http.StatusInternalServerError, app.errorJson("error verifying user"))
+	}
+	c.Set("userID", uint(userID))
 	c.Next()
 
 }

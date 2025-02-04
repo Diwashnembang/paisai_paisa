@@ -14,6 +14,7 @@ type Crud struct {
 	DB *gorm.DB
 }
 
+// returns is of the newly created user
 func (db *Crud) CreateUser(email, password string) (int, error) {
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -34,17 +35,34 @@ func (db *Crud) CreateUser(email, password string) (int, error) {
 
 }
 
-func (db *Crud) VerifyUser(email, password string) (bool, error) {
+func (db *Crud) VerifyUser(email, password string) (bool, int, error) {
 
 	var user models.User
 	result := db.DB.First(&user, "email = ?", email)
 	if result.Error != nil {
 		slog.Error("error finding user %s", result.Error)
-		return false, fmt.Errorf("error finding user")
+		return false, -1, fmt.Errorf("error finding user")
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return false, fmt.Errorf("INCORECT PASSWORD")
+		return false, -1, fmt.Errorf("INCORECT PASSWORD")
 	}
-	
-	return true, nil
+
+	return true, int(user.ID), nil
+}
+
+func (db *Crud) CreateTransaction(id uint, amount float64, category, account, description string) (int, error) {
+
+	transaction := &models.Transaction{
+		UserID:      id,
+		Type:        category,
+		Amount:      amount,
+		Description: description,
+	}
+	result := db.DB.Create(transaction)
+	if result.Error != nil {
+		slog.Error("error creating transaction %s", result.Error)
+		return -1, errors.New("error creating transaction")
+	}
+
+	return int(transaction.ID), nil
 }

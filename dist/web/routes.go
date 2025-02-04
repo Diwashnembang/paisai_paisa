@@ -8,5 +8,6 @@ func (app *application) routes() {
 	protected := app.router.Group("/")
 	protected.Use(app.isAuthorized)
 	protected.GET("/", app.home)
+	protected.POST("/addTransaction", app.createTransactionPost)
 
 }

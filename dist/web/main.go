@@ -9,20 +9,20 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"github.com/joho/godotenv"
 )
 
 type application struct {
-	router *gin.Engine
-	DB     *database.Crud
+	router     *gin.Engine
+	DB         *database.Crud
 	JWT_SECRET string
 }
 
 func main() {
 	err := godotenv.Load()
-	if err!=nil{
+	if err != nil {
 		log.Fatalf("Error loading .env files: %v", err)
 		os.Exit(1)
 	}
@@ -33,7 +33,7 @@ func main() {
 		log.Fatal("Failed to connect to database")
 		os.Exit(1)
 	}
-	err = db.AutoMigrate(&models.User{})
+	err = db.AutoMigrate(&models.User{}, &models.Transaction{})
 	if err != nil {
 		log.Fatal("failed to migrate schema", err)
 		os.Exit(1)
